@@ -1,3 +1,5 @@
+-- docker exec -i postgres psql -U your_login -d piscineds < table.sql
+
 CREATE TABLE data_2022_oct (
     event_time TIMESTAMP WITH TIME ZONE,
     event_type VARCHAR(50),

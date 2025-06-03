@@ -32,4 +32,6 @@ docker exec -i postgres psql -U mmota -d piscineds -h localhost  -f - < ex02/tab
 
 
 Resources:
-https://medium.com/@marvinjungre/get-postgresql-and-pgadmin-4-up-and-running-with-docker-4a8d81048aea
+POSTGRES+PAGEADMIN+DOCKER - https://medium.com/@marvinjungre/get-postgresql-and-pgadmin-4-up-and-running-with-docker-4a8d81048aea
+CONNECT POSTGRESQL+PYTHON - https://neon.com/postgresql/postgresql-python/connect
+GETTING ALL THE CSV FILES - https://www.pythonforbeginners.com/code-snippets-source-code/python-os-listdir-and-endswith
