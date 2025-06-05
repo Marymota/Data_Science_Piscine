@@ -1,0 +1,40 @@
+services:
+
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data 
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - piscineds_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${POSTGRES_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "8080:80"
+    networks:
+      - piscineds_network
+    depends_on:
+      - postgres
+ 
+volumes:
+  pgdata:
+
+networks:
+  piscineds_network:
+    driver: bridge
+    
+#COMMANDS
+# docker exec -it postgres psql -U mmota -d piscineds -h localhost -W

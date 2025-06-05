@@ -3,16 +3,16 @@ version: '3.9'
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: postgres
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data 
+    container_name: postgres
+    ports:
+      - "5432:5432"
     networks:
       - piscineds_network
 
@@ -21,7 +21,7 @@ services:
     container_name: piscineds_pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${POSTGRES_USER}
+      PGADMIN_DEFAULT_EMAIL: ${POSTGRES_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "8080:80"
