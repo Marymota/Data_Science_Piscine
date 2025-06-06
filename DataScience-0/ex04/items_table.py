@@ -113,7 +113,8 @@ def main():
     # Create table for each CSV file
     for csv_file in csv_files:
         csv_path = os.path.join(item, csv_file)
-        table_name = csv_file.replace('.csv', '')
+        # table_name = csv_file.replace('.csv', '')
+        table_name = "items"
         
         if create_table(csv_path, table_name, conn):
             try:
@@ -121,7 +122,7 @@ def main():
             except Exception as e:
                 print(f"Error processing file {csv_file}: {e}")
         else:
-            print("item folder not found")
+            print("items folder not found")
 
     conn.close()
 

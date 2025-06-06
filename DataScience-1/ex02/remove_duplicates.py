@@ -59,49 +59,49 @@ def read_table_header(csv_path, table_name):
         print(f"Error getting columns from {table_name}: {e}")
         return None
 
-def create_table(csv_path, table_name, conn):
-    try:
-        # Read only the header row to get the name and # of columns
-        df = pd.read_csv(csv_path, nrows=1)
+# def create_table(csv_path, table_name, conn):
+#     try:
+#         # Read only the header row to get the name and # of columns
+#         df = pd.read_csv(csv_path, nrows=1)
 
-        # for col in df.columns:
-        #     # Infer and give the right datatype to columns
-        #     sql_type = map_dtype_to_sql(df[col].dtype) 
-        #     columns.append(f'"{col}" {sql_type}')
+#         # for col in df.columns:
+#         #     # Infer and give the right datatype to columns
+#         #     sql_type = map_dtype_to_sql(df[col].dtype) 
+#         #     columns.append(f'"{col}" {sql_type}')
 
-        sql = f"""
-        CREATE TABLE {table_name} (
-            event_time TIMESTAMP WITH TIME ZONE,
-            event_type VARCHAR(20),
-            product_id INTEGER,
-            price DECIMAL(10,2),
-            user_id BIGINT,
-            user_session UUID
-        );"""
+#         sql = f"""
+#         CREATE TABLE {table_name} (
+#             event_time TIMESTAMP WITH TIME ZONE,
+#             event_type VARCHAR(20),
+#             product_id INTEGER,
+#             price DECIMAL(10,2),
+#             user_id BIGINT,
+#             user_session UUID
+#         );"""
 
-        cursor = conn.cursor()
-        cursor.execute(f"DROP TABLE IF EXISTS {table_name};")
-        cursor.execute(sql)
-        conn.commit()
-        cursor.close()
+#         cursor = conn.cursor()
+#         cursor.execute(f"DROP TABLE IF EXISTS {table_name};")
+#         cursor.execute(sql)
+#         conn.commit()
+#         cursor.close()
 
         
-        print(f"Created table {table_name}")
-        return True
-    except Exception as e:
-        print(f"Error creating table {table_name}: {e}")
-        return False
+#         print(f"Created table {table_name}")
+#         return True
+#     except Exception as e:
+#         print(f"Error creating table {table_name}: {e}")
+#         return False
 
-def load_table(engine, table_name, chunksize=10000):
-    print(f"Loading table {table_name}")
-    try:
-        query = f"SELECT * FROM {table_name}"
-        chunks = pd.read_sql(query, engine, chunksize=chunksize) # Avoids memory spikes
-        df = pd.concat(chunks, ignore_index=True)
-        return df
-    except Exception as e:
-        print(f"Failed to load table {table_name}: {e}")
-        return None
+# def load_table(engine, table_name, chunksize=10000):
+#     print(f"Loading table {table_name}")
+#     try:
+#         query = f"SELECT * FROM {table_name}"
+#         chunks = pd.read_sql(query, engine, chunksize=chunksize) # Avoids memory spikes
+#         df = pd.concat(chunks, ignore_index=True)
+#         return df
+#     except Exception as e:
+#         print(f"Failed to load table {table_name}: {e}")
+#         return None
 
 def remove_duplicates(table_name, engine):
     try:
@@ -134,39 +134,38 @@ def remove_duplicates(table_name, engine):
             print(f"Rename temp_{table_name}")
             conn.execute(text(f"ALTER TABLE temp_{table_name} RENAME TO {table_name};"))
 
-        print(f"Duplicates removed from {table_name} successfully.")
         return True
 
     except Exception as e:
         print(f"Error removing duplicates from {table_name}: {e}")
         return False
     
-def update_table(engine, table_name, clean_table):
+# def update_table(engine, table_name, clean_table):
 
-    # Export DataFrame to CSV in memory
-    csv_buffer = io.StringIO()
-    clean_table.to_csv(csv_buffer, index=False, header=False)
-    csv_buffer.seek(0)
+#     # Export DataFrame to CSV in memory
+#     csv_buffer = io.StringIO()
+#     clean_table.to_csv(csv_buffer, index=False, header=False)
+#     csv_buffer.seek(0)
 
-    try:
-        raw_conn = engine.raw_connection()
+#     try:
+#         raw_conn = engine.raw_connection()
 
-        # Clear existing data
-        cursor = raw_conn.cursor()
-        print(f"Truncating table {table_name}")
-        cursor.execute(f'TRUNCATE TABLE "{table_name}";')
+#         # Clear existing data
+#         cursor = raw_conn.cursor()
+#         print(f"Truncating table {table_name}")
+#         cursor.execute(f'TRUNCATE TABLE "{table_name}";')
 
-        # Insert new data
-        columns = ','.join(clean_table.columns)
-        print(f"Inserting data into {table_name} using COPY")
-        print(f"Cleaning table {table_name}")
-        cursor.copy_expert(f'COPY "{table_name}" ({columns}) FROM STDIN WITH CSV', csv_buffer)
-        raw_conn.commit()
-    except Exception as e:
-        print(f"Error updating table '{table_name}': {e}")
-    finally:
-        raw_conn.close()
-    print("Table updated successfully.")
+#         # Insert new data
+#         columns = ','.join(clean_table.columns)
+#         print(f"Inserting data into {table_name} using COPY")
+#         print(f"Cleaning table {table_name}")
+#         cursor.copy_expert(f'COPY "{table_name}" ({columns}) FROM STDIN WITH CSV', csv_buffer)
+#         raw_conn.commit()
+#     except Exception as e:
+#         print(f"Error updating table '{table_name}': {e}")
+#     finally:
+#         raw_conn.close()
+#     print("Table updated successfully.")
 
 
 
@@ -178,18 +177,18 @@ def main():
         return 
 
     table_name = "customers"
-
-    # Get table from database
-    table_df = load_table(engine, table_name)
-    
+   
     # Remove duplicates
     if remove_duplicates(table_name, engine):
-        # Reload cleaned table and update it
-        clean_table = load_table(engine, table_name)
-        if clean_table is not None:
-            update_table(engine, table_name, clean_table)
-        else:
-            print("Failed to reload cleaned table.")
+        print(f"Duplicates removed from {table_name} successfully.")
+        
+        # After removing duplicates I was loading the table back into a DataFrame with load_table(), only to rewrite the same data back into the same table using update_table().
+        # # Reload cleaned table and update it
+        # clean_table = load_table(engine, table_name)
+        # if clean_table is not None:
+        #     update_table(engine, table_name, clean_table)
+        # else:
+            # print("Failed to reload cleaned table.")
     else:
         print("Failed to remove duplicates.")
 
@@ -197,3 +196,11 @@ def main():
 # Run the script
 if __name__ == "__main__":
     main()
+
+
+#COMMANDS FOR TESTING
+#   SELECT * FROM public.customers
+#   WHERE product_id = 5802443 AND event_type = 'remove_from_cart'
+#   ORDER BY event_time ASC;
+#
+#   SELECT COUNT(*) FROM customers;
