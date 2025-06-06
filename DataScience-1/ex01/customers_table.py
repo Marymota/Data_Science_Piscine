@@ -32,37 +32,47 @@ def get_csv_files(customer):
     print(f"Found CSV files: {csv_files}")
     return csv_files
 
-# Get the correct datatype to use in SQL queries with pandas
-def map_dtype_to_sql(dtype):
-    if pd.api.types.is_integer_dtype(dtype):
-        return "INTEGER"
-    elif pd.api.types.is_float_dtype(dtype):
-        return "FLOAT"
-    elif pd.api.types.is_bool_dtype(dtype):
-        return "BOOLEAN"
-    elif pd.api.types.is_datetime64_dtype(dtype):
-        return "TIMESTAMP"
-    else:
-        return "TEXT"
+# # Get the correct datatype to use in SQL queries with pandas
+# def map_dtype_to_sql(dtype):
+#     if pd.api.types.is_integer_dtype(dtype):
+#         return "INTEGER"
+#     elif pd.api.types.is_float_dtype(dtype):
+#         return "FLOAT"
+#     elif pd.api.types.is_bool_dtype(dtype):
+#         return "BOOLEAN"
+#     elif pd.api.types.is_datetime64_dtype(dtype):
+#         return "TIMESTAMP"
+#     else:
+#         return "TEXT"
 
 def create_table(csv_path, table_name, conn):
     try:
         # Read only the header row to get the name and # of columns
         df = pd.read_csv(csv_path, nrows=1)
-        columns = []
 
-        for col in df.columns:
-            # Infer and give the right datatype to columns
-            sql_type = map_dtype_to_sql(df[col].dtype) 
-            columns.append(f'"{col}" {sql_type}')
-        
-        query = f'CREATE TABLE IF NOT EXISTS "{table_name}" ({", ".join(columns)});' 
+        # for col in df.columns:
+        #     # Infer and give the right datatype to columns
+        #     sql_type = map_dtype_to_sql(df[col].dtype) 
+        #     columns.append(f'"{col}" {sql_type}')
 
-        with conn.cursor() as cursor:
-            cursor.execute(query)
-            conn.commit()
+        sql = f"""
+        CREATE TABLE {table_name} (
+            event_time TIMESTAMP WITH TIME ZONE,
+            event_type VARCHAR(20),
+            product_id INTEGER,
+            price DECIMAL(10,2),
+            user_id BIGINT,
+            user_session UUID
+        );"""
+
+        cursor = conn.cursor()
+        cursor.execute(f"DROP TABLE IF EXISTS {table_name};")
+        cursor.execute(sql)
+        conn.commit()
+        cursor.close()
+
         
-        print(f"Created table {table_name} with inferred types")
+        print(f"Created table {table_name}")
         return True
     except Exception as e:
         print(f"Error creating table {table_name}: {e}")
@@ -91,7 +101,7 @@ def combine_tables(conn, table_list, final_table_name):
             """
             cursor.execute(union_query)
             conn.commit()
-        print(f"Combined all the tables into {final_table_name})")
+        print(f"Combined all the tables into {final_table_name}")
     except Exception as e:
         print(f"Error creating combined table: {e}")
 

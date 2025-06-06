@@ -1,6 +1,0 @@
-
-# CREATE TABLE by UNION ALL
-# by joining all the SELECT tables from a list of tables
-union_query = f"""
-    CREATE TABLE "{final_name}" AS
-    {" UNION ALL ".join([f'SELECT * FROM "{table}"' for table in table names])};
