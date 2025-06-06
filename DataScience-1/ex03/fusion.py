@@ -26,8 +26,42 @@ def connect_to_database():
         print(f"Error connecting to database: {e}")
         return None
 
+def remove_duplicates(table_name, engine):
+    try:
+        with engine.begin() as conn:
+            # Drop temp table if exists and create a new one with lag column
+            print(f"Drop temp table if exists...")
+            conn.execute(text(f"DROP TABLE IF EXISTS temp_{table_name};"))
+            print(f"Create a temp table with cool features...")
+            conn.execute(text(f"""
+                CREATE TABLE temp_{table_name} AS
+                WITH filtered AS (
+                    SELECT * FROM {table_name}
+                )
+                SELECT product_id, category_id, category_code, brand
+                FROM filtered;
+            """))
+
+            # Drop temp table afterwards
+            print(f"Drop original {table_name}...")
+            conn.execute(text(f"DROP TABLE {table_name};"))
+            print(f"Rename temp_{table_name}")
+            conn.execute(text(f"ALTER TABLE temp_{table_name} RENAME TO {table_name};"))
+
+        return True
+
+    except Exception as e:
+        print(f"Error removing duplicates from {table_name}: {e}")
+        return False
         
 def join_tables(table_customers, table_items, engine):
+
+    try:
+        remove_duplicates(table_items, engine)
+        print(f"Duplicates removed from {table_items} successfully.")
+    except Exception as e:
+        print(f"Error joining tables as {table_customers}: {e}")
+        return False
 
     try:
         with engine.begin() as conn:
@@ -89,4 +123,4 @@ if __name__ == "__main__":
 #   ORDER BY event_time ASC;
 #
 #   SELECT COUNT(*) FROM customers;
-#   19175899 -> 45899928
+#   Probably is to remove the NULLS....
