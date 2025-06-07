@@ -27,31 +27,28 @@ def connect_to_database():
         print(f"Error connecting to database: {e}")
         return None
 
-def create_pie(conn):
-    # Read data from SQL table
+def create_pie_chart(engine):
     try:
-        # Step 1: Create temp table
-        with engine.begin() as conn:
-            print(f"Creating the pie ...")
-            conn.execute(text(f"""
-                SELECT 
-                    event_time, 
-                    event_type, 
-                    product_id, 
-                    price, 
-                    user_id,
-                    session, 
-                    category_id,
-                    category_code,
-                    brand
-                FROM customers 
-            """))
-
-        # Create pie chart
-        plt.figure(figsize=(8, 6))
-        plt.pie(df['value'], labels=df['category'], autopct='%1.1f%%', startangle=90)
-        plt.title('Data Distribution')
-        plt.axis('equal')
+        # Read event_type counts from the customers table
+        df = pd.read_sql_query(text("""
+            SELECT
+                event_type,
+                COUNT(*) AS value
+            FROM customers
+            GROUP BY event_type
+            ORDER BY
+                CASE event_type
+                    WHEN 'cart' THEN 1
+                    WHEN 'remove_from_cart' THEN 2
+                    WHEN 'purchase' THEN 3
+                    WHEN 'view' THEN 4
+                    ELSE 5
+                END
+        """), engine)
+        plt.figure(figsize=(20, 20))
+        colors = ['#dd8452', '#55a868', '#c44e52','#4c72b0',] 
+        plt.pie(df['value'], labels=df['event_type'], autopct='%1.1f%%', startangle=180, colors=colors)
+        plt.title('Customers Pie Chart')
         plt.show()
         return True
     except Exception as e:
@@ -65,6 +62,8 @@ def main():
     if not engine:
         print("Failed to connect to the database.")
         return 
+    
+    create_pie_chart(engine)
 
 
 if __name__ == "__main__":
