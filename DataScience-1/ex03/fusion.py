@@ -28,28 +28,29 @@ def connect_to_database():
 
 def remove_duplicates(table_name, engine):
     try:
+        # Step 1: Create temp table
         with engine.begin() as conn:
-            print(f"Removing duplicates from {table_name}...")
-
+            print(f"Creating temp table temp_{table_name} ...")
             conn.execute(text(f"""
-                DROP TABLE IF EXISTS temp_{table_name};
-
                 CREATE TABLE temp_{table_name} AS
                 SELECT
-                	product_id,
-                	MAX(category_code) AS category_code,
-                	MAX(brand) AS brands
-                FROM items
+                    product_id,
+                    MAX(category_code) AS category_code,
+                    MAX(category_id) AS category_id,
+                    MAX(brand) AS brand
+                FROM {table_name}
                 GROUP BY product_id;
             """))
-
+        
+        # Step 2: Drop old table and rename temp table in a new transaction
+        with engine.begin() as conn:
+            print(f"Dropping old table {table_name} and renaming temp_{table_name} ...")
             conn.execute(text(f"DROP TABLE {table_name};"))
             conn.execute(text(f"ALTER TABLE temp_{table_name} RENAME TO {table_name};"))
 
         return True
-
     except Exception as e:
-        print(f"Error removing duplicates from {table_name}: {e}")
+        print(f"Error: {e}")
         return False
         
 def join_tables(table_customers, table_items, engine):
@@ -68,11 +69,18 @@ def join_tables(table_customers, table_items, engine):
             conn.execute(text(f"DROP TABLE IF EXISTS temp_{table_customers};"))
             print(f"Create a temp table with cool features...")
             conn.execute(text(f"""
-                CREATE TABLE temp_{table_customers} AS
+                CREATE TABLE temp_customers AS
                 SELECT
-                    {table_customers}.product_id AS customer_product_id,
-                    {table_items}.product_id AS item_product_id
-                FROM {table_customers}
+					{table_customers}.event_time AS event_time,
+					{table_customers}.event_type AS event_type,
+					{table_customers}.product_id AS product_id,
+					{table_customers}.price AS price,
+					{table_customers}.user_id AS user_id,
+					{table_customers}.user_session AS session,
+                    {table_items}.category_id AS category_id,
+                    {table_items}.category_code AS category_code,
+					{table_items}.brand AS brand
+                FROM customers
                 LEFT JOIN {table_items}
                 ON {table_customers}.product_id = {table_items}.product_id;
             """))

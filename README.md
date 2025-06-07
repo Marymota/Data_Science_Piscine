@@ -47,3 +47,6 @@ IMPORTING PG TABLES - https://medium.com/@alestamm/importing-data-from-a-postgre
                       https://www.geeksforgeeks.org/how-to-insert-a-pandas-dataframe-to-an-existing-postgresql-table/
 REMOVE DUPLICATES - https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.drop_duplicates.html
 
+Apache Parquet
+polars
+
