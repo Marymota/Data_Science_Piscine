@@ -6,8 +6,13 @@
 To get the environment up and running, use the following command:
 
 ```bash
-docker compose up
+docker compose up -d
 ```
+
+### Docker compose
+The ex00 docker compose file includes an environmental variable to enforce password:
+* **POSTGRES_INITDB_ARGS**: "--auth=md5 --auth-local=md5"
+
 
 ### Configuration (.env)
 You must create a `.env` file in the root directory with the following variables:
@@ -58,7 +63,7 @@ docker exec -it postgres sh
 ### Creating Tables Manually
 1.  **Directly from Host to PSQL:**
     ```bash
-    docker exec -i postgres psql -U student_login -d piscineds -h localhost -f - < customer/table.sql
+    docker exec -i -e PGPASSWORD='password' postgres psql -U login_name -d piscineds < table.sql
     ```
 
 2.  **Inside the Container:**
@@ -116,6 +121,11 @@ docker stop $(docker ps -a -q)
 **Remove all containers:**
 ```bash
 docker rm $(docker ps -a -q)
+```
+
+**Remove container and volumes:**
+```bash
+docker compose down -v
 ```
 
 ---
