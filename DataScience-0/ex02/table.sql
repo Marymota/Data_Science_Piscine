@@ -9,5 +9,5 @@ CREATE TABLE data_2022_oct (
 );
 
 --  COMMANDS
---  docker exec -i postgres psql -U mmota -d piscineds < table.sql
---  docker exec -i postgres psql -U mmota -d piscineds -c "\COPY data_2022_oct FROM STDIN WITH (FORMAT csv, HEADER true)" < customer/data_2022_oct.csv
+--  docker exec -i -e PGPASSWORD='password' postgres psql -U my_login -d piscineds < table.sql
+--  docker exec -i -e PGPASSWORD='password' postgres psql -U my_login -d piscineds -c "\COPY data_2022_oct FROM STDIN WITH (FORMAT csv, HEADER true)" < data_2022_oct.csv
