@@ -108,7 +108,72 @@ To confirm the number of rows in your customers table:
 ```sql
 SELECT COUNT(*) FROM customers; -- Expected: 20,692,840
 ```
+# Data Warehouse
+## Exercice 01: customers table
+The script connects to a PostgreSQL database, scans the schema for any tables starting with the prefix data_20 (representing different months like data_2022_oct, data_2023_jan, etc.), and uses a SQL command to merge them all into one master table named customers.
+```sql
+union_query = f"""
+    CREATE TABLE "{final_table_name}" AS
+    {" UNION ALL ".join([f'SELECT * FROM "{table}"' for table in table_list])};
+"""
+```
+**Count: 16536158**
+---
+## Exercice 02: remove duplicates
+This script performs data cleaning operation. It uses a temporary table and identifies and removes duplicate entries in the customers table based on specific event criteria, then replaces the original table with the cleaned version.
+```sql
+-- first try
+LAG(event_time) OVER (
+    PARTITION BY event_type, product_id, price, user_id, user_session
+    ORDER BY event_time
+) AS prev_time
+-- second try
+SELECT DISTINCT 
+    event_time, 
+    event_type, 
+    product_id, 
+    price, 
+    user_id, 
+    user_session
+FROM {table_name};
+```
+**Count: 15337305** (with only LAG) 
+**Count: 15667350** (with only DISTINCT)
+**Count: 15331407** (with both + DISTINCT ON)
 
+### Test
+```sql
+-- Test 1 — No exact duplicates remain:
+SELECT event_type, event_time, user_id, product_id, COUNT(*)
+FROM customers
+GROUP BY event_type, event_time, user_id, product_id
+HAVING COUNT(*) > 1;
+-- Must return 0 rows
+-- Test 2 — No near-duplicates within 1 second remain:
+SELECT a.event_time, a.event_type, a.product_id, a.user_id
+FROM customers a
+JOIN customers b
+  ON  a.event_type    = b.event_type
+  AND a.product_id    = b.product_id
+  AND a.user_id       = b.user_id
+  AND a.user_session  = b.user_session
+  AND a.event_time    < b.event_time
+  AND EXTRACT(EPOCH FROM (b.event_time - a.event_time)) <= 1;
+-- Must return 0 rows
+-- Test 3 - From evaluation sheet
+  SELECT * FROM public.customers
+  WHERE product_id = 5802443 AND event_type = 'remove_from_cart'
+  ORDER BY event_time ASC;
+```
+---
+## Exercice 03: fusion
+This script performs a fusion of two tables adding new columns to the first table
+based on a parameter
+```sql
+    LEFT JOIN {table_items}
+    ON {table_customers}.product_id = {table_items}.product_id;
+```
+**Count: 15331407** (same as the previous exercise)
 ---
 
 ## Useful Docker Commands

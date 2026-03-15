@@ -131,4 +131,3 @@ if __name__ == "__main__":
 #   ORDER BY event_time ASC;
 #
 #   SELECT COUNT(*) FROM customers;
-#   Probably is to remove the NULLS....
