@@ -13,7 +13,7 @@ load_dotenv()
 
 # Connect to the PostgreSQL
 def connect_to_database():
-    host = 'localhost'  # <-- Removed the comma
+    host = 'localhost'
     database = os.getenv("POSTGRES_DB")
     user = os.getenv("POSTGRES_USER")
     password = os.getenv("POSTGRES_PASSWORD")
@@ -131,3 +131,4 @@ if __name__ == "__main__":
 #   ORDER BY event_time ASC;
 #
 #   SELECT COUNT(*) FROM customers;
+#   Probably is to remove the NULLS....

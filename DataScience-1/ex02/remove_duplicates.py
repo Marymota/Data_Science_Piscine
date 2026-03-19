@@ -13,7 +13,7 @@ load_dotenv()
 
 # Connect to the PostgreSQL
 def connect_to_database():
-    host = 'localhost'  # <-- Removed the comma
+    host = 'localhost'
     database = os.getenv("POSTGRES_DB")
     user = os.getenv("POSTGRES_USER")
     password = os.getenv("POSTGRES_PASSWORD")
@@ -52,24 +52,27 @@ def remove_duplicates(table_name, engine):
             conn.execute(text(f"DROP TABLE IF EXISTS temp_{table_name};"))
             print(f"Create a temp table with cool features...")
             # Table cleaning logic:
-            # DISTINCT * :drop exact duplicates
+            # DISTINCT * : remove fully identical rows
             # LAG() → filter gap > 1s
             # DISTINCT ON (everything the same but the session)
             conn.execute(text(f"""
-                CREATE TABLE temp_{table_name} AS
-                WITH time_filtered AS (
-                    SELECT DISTINCT *,
-                        LAG(event_time) OVER (
-                            PARTITION BY event_type, product_id, price, user_id, user_session
-                            ORDER BY event_time
-                        ) AS prev_time
-                    FROM {table_name}
-                )
-                SELECT DISTINCT ON (event_time, event_type, product_id, price, user_id)
-                    event_time, event_type, product_id, price, user_id, user_session
-                FROM time_filtered
-                WHERE prev_time IS NULL
-                OR EXTRACT(EPOCH FROM (event_time - prev_time)) > 1;
+            CREATE TABLE temp_customers AS
+            WITH dup AS (
+                SELECT DISTINCT *  
+                FROM customers
+            ),
+            time_filtered AS (
+                SELECT *,
+                    LAG(event_time) OVER (
+                        PARTITION BY user_id, user_session, event_type, product_id
+                        ORDER BY event_time
+                    ) AS prev_time
+                FROM dup
+            )
+            SELECT event_time, event_type, product_id, price, user_id, user_session
+            FROM time_filtered
+            WHERE prev_time IS NULL
+            OR EXTRACT(EPOCH FROM (event_time - prev_time)) > 1;
             """))
 
             # Drop temp table afterwards

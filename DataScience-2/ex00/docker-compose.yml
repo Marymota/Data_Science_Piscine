@@ -1,6 +1,5 @@
-version: '3.9'
-
 services:
+
   postgres:
     image: postgres:15-alpine
     restart: always
@@ -8,6 +7,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Do not trust the default authentication method
+      POSTGRES_INITDB_ARGS: "--auth=md5 --auth-local=md5"
     volumes:
       - pgdata:/var/lib/postgresql/data 
     container_name: postgres
@@ -17,16 +18,14 @@ services:
       - piscineds_network
 
   pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: piscineds_pgadmin
+    image: dpage/pgadmin4
+    container_name: pgadmin
     restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: ${POSTGRES_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "8080:80"
-    volumes:
-      - pgadmindata:/var/lib/pgadmin
     networks:
       - piscineds_network
     depends_on:
@@ -34,10 +33,10 @@ services:
  
 volumes:
   pgdata:
-  pgadmindata:
 
 networks:
   piscineds_network:
     driver: bridge
-
+    
+#COMMANDS
 # docker exec -it postgres psql -U mmota -d piscineds -h localhost -W

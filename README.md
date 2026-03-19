@@ -108,7 +108,7 @@ To confirm the number of rows in your customers table:
 ```sql
 SELECT COUNT(*) FROM customers; -- Expected: 20,692,840
 ```
-# Data Warehouse
+#  Piscine datascience 1 - Data Warehouse
 ## Exercice 01: customers table
 The script connects to a PostgreSQL database, scans the schema for any tables starting with the prefix data_20 (representing different months like data_2022_oct, data_2023_jan, etc.), and uses a SQL command to merge them all into one master table named customers.
 ```sql
@@ -137,16 +137,15 @@ SELECT DISTINCT
     user_session
 FROM {table_name};
 ```
-**Count: 15337305** (with only LAG) 
-**Count: 15667350** (with only DISTINCT)
-**Count: 15331407** (with both + DISTINCT ON)
+**Count: 15337305** (with only LAG) ✔️
+**Count: 15667350** (with only DISTINCT) 
 
 ### Test
 ```sql
 -- Test 1 — No exact duplicates remain:
-SELECT event_type, event_time, user_id, product_id, COUNT(*)
+SELECT event_type, price, event_time, user_id, product_id, user_session, COUNT(*)
 FROM customers
-GROUP BY event_type, event_time, user_id, product_id
+GROUP BY event_type, price, event_time, user_id, product_id, user_session
 HAVING COUNT(*) > 1;
 -- Must return 0 rows
 -- Test 2 — No near-duplicates within 1 second remain:
@@ -167,14 +166,18 @@ JOIN customers b
 ```
 ---
 ## Exercice 03: fusion
-This script performs a fusion of two tables adding new columns to the first table
-based on a parameter
+This script performs a fusion of two tables adding new columns and values to the first table
+based on product_id.
 ```sql
     LEFT JOIN {table_items}
     ON {table_customers}.product_id = {table_items}.product_id;
 ```
 **Count: 15331407** (same as the previous exercise)
 ---
+# Piscine datascience 2 - Data Viz
+## Ex00
+
+
 
 ## Useful Docker Commands
 

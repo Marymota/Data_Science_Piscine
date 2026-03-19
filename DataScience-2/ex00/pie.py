@@ -1,20 +1,15 @@
 import os
-import io
-from io import StringIO
 from dotenv import load_dotenv
 import pandas as pd
-import psycopg2
-from psycopg2 import sql
 from sqlalchemy import create_engine, text
 import matplotlib.pyplot as plt
-
 
 #  Load environment variables from .env
 load_dotenv()
 
 # Connect to the PostgreSQL
 def connect_to_database():
-    host = 'localhost'  # <-- Removed the comma
+    host = 'localhost'
     database = os.getenv("POSTGRES_DB")
     user = os.getenv("POSTGRES_USER")
     password = os.getenv("POSTGRES_PASSWORD")
@@ -27,33 +22,35 @@ def connect_to_database():
         print(f"Error connecting to database: {e}")
         return None
 
-def create_pie_chart(engine):
+def pie_chart(engine):
+    table_customers = 'customers'
     try:
-        # Read event_type counts from the customers table
-        df = pd.read_sql_query(text("""
-            SELECT
-                event_type,
-                COUNT(*) AS value
-            FROM customers
-            GROUP BY event_type
-            ORDER BY
-                CASE event_type
-                    WHEN 'cart' THEN 1
-                    WHEN 'remove_from_cart' THEN 2
-                    WHEN 'purchase' THEN 3
-                    WHEN 'view' THEN 4
-                    ELSE 5
-                END
-        """), engine)
-        plt.figure(figsize=(20, 20))
-        colors = ['#dd8452', '#55a868', '#c44e52','#4c72b0',] 
-        plt.pie(df['value'], labels=df['event_type'], autopct='%1.1f%%', startangle=180, colors=colors)
-        plt.title('Customers Pie Chart')
-        plt.show()
-        return True
+        with engine.begin() as conn:
+            print(f"Creating temp table temp_{table_customers} ...")
+            result = conn.execute(text(f"""
+                SELECT
+                    SUM(CASE WHEN event_type = 'view' THEN 1 ELSE 0 END) AS view,
+                    SUM(CASE WHEN event_type = 'purchase' THEN 1 ELSE 0 END) AS purchase,
+                    SUM(CASE WHEN event_type = 'remove_from_cart' THEN 1 ELSE 0 END) AS remove_from_cart,
+                    SUM(CASE WHEN event_type = 'cart' THEN 1 ELSE 0 END) AS cart
+                FROM {table_customers};
+            """))
+            row = result.fetchone()
+            view, purchase, remove_from_cart, cart = row
+            print("Data retrieved successfully.")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error retrieving data: {e}")
         return False
+
+    labels = 'view', 'cart', 'remove_from_cart', 'purchase'
+    sizes = [view, cart, remove_from_cart, purchase]
+    fig, ax = plt.subplots()
+    ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
+    ax.axis('equal')
+    plt.show()
+    return True
+
+
 
 # Main
 def main():
@@ -63,7 +60,7 @@ def main():
         print("Failed to connect to the database.")
         return 
     
-    create_pie_chart(engine)
+    return pie_chart(engine)
 
 
 if __name__ == "__main__":
