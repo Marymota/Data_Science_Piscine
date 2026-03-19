@@ -29,10 +29,10 @@ def pie_chart(engine):
             print(f"Creating temp table temp_{table_customers} ...")
             result = conn.execute(text(f"""
                 SELECT
-                    SUM(CASE WHEN event_type = 'view' THEN 1 ELSE 0 END) AS view,
-                    SUM(CASE WHEN event_type = 'purchase' THEN 1 ELSE 0 END) AS purchase,
-                    SUM(CASE WHEN event_type = 'remove_from_cart' THEN 1 ELSE 0 END) AS remove_from_cart,
-                    SUM(CASE WHEN event_type = 'cart' THEN 1 ELSE 0 END) AS cart
+                    COUNT(*) FILTER (WHERE event_type = 'view') AS view,
+                    COUNT(*) FILTER (WHERE event_type = 'purchase') AS purchase,
+                    COUNT(*) FILTER (WHERE event_type = 'remove_from_cart') AS remove_from_cart,
+                    COUNT(*) FILTER (WHERE event_type = 'cart') AS cart
                 FROM {table_customers};
             """))
             row = result.fetchone()
