@@ -134,11 +134,14 @@ SELECT DISTINCT
     product_id, 
     price, 
     user_id, 
-    user_session
+    user_session 
 FROM {table_name};
 ```
 **Count: 15337305** (with only LAG) ✔️
 **Count: 15667350** (with only DISTINCT) 
+
+*** Later I discovered that I should have removed 'user_session' from the "LAG(...) PARTITION BY (...)" because it causes errors in the DS2 ex01 
+
 
 ### Test
 ```sql
