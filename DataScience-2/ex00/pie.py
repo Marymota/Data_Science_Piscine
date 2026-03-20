@@ -36,8 +36,7 @@ def pie_chart(engine):
         df["total"],
         labels=df["event_type"],
         autopct="%1.1f%%",
-        pctdistance=0.6,
-        labeldistance=1.15,
+        explode= [0.005] * len(df)
     )
     plt.tight_layout() 
     plt.show()
