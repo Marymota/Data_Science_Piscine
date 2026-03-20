@@ -1,8 +1,8 @@
 import os
 from dotenv import load_dotenv
-import pandas as pd
 from sqlalchemy import create_engine, text
 import matplotlib.pyplot as plt
+import pandas as pd
 
 #  Load environment variables from .env
 load_dotenv()
@@ -23,34 +23,25 @@ def connect_to_database():
         return None
 
 def pie_chart(engine):
-    table_customers = 'customers'
-    try:
-        with engine.begin() as conn:
-            print(f"Creating temp table temp_{table_customers} ...")
-            result = conn.execute(text(f"""
-                SELECT
-                    COUNT(*) FILTER (WHERE event_type = 'view') AS view,
-                    COUNT(*) FILTER (WHERE event_type = 'purchase') AS purchase,
-                    COUNT(*) FILTER (WHERE event_type = 'remove_from_cart') AS remove_from_cart,
-                    COUNT(*) FILTER (WHERE event_type = 'cart') AS cart
-                FROM {table_customers};
-            """))
-            row = result.fetchone()
-            view, purchase, remove_from_cart, cart = row
-            print("Data retrieved successfully.")
-    except Exception as e:
-        print(f"Error retrieving data: {e}")
-        return False
+    query = """
+        SELECT event_type, COUNT(*) AS total
+        FROM customers
+        GROUP BY event_type
+        ORDER BY total DESC
+    """
+    df = pd.read_sql(query, engine)
 
-    labels = 'view', 'cart', 'remove_from_cart', 'purchase'
-    sizes = [view, cart, remove_from_cart, purchase]
     fig, ax = plt.subplots()
-    ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
-    ax.axis('equal')
+    ax.pie(
+        df["total"],
+        labels=df["event_type"],
+        autopct="%1.1f%%",
+        pctdistance=0.6,
+        labeldistance=1.15,
+    )
+    plt.tight_layout() 
     plt.show()
     return True
-
-
 
 # Main
 def main():
