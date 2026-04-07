@@ -71,6 +71,7 @@ def charts(engine):
         print("Data retrieved successfully.")
         # Charts customization
         sns.set_theme(style="darkgrid")
+        
         # Chart customers - Number of customers
         df = pd.read_sql(query_customers, engine)
         df["date"] = pd.to_datetime(df["date"])

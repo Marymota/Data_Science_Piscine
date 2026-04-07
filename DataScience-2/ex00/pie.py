@@ -49,9 +49,7 @@ def main():
     if not engine:
         print("Failed to connect to the database.")
         return 
-    
     return pie_chart(engine)
-
 
 if __name__ == "__main__":
     main()

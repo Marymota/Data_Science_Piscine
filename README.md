@@ -177,10 +177,80 @@ based on product_id.
 ```
 **Count: 15331407** (same as the previous exercise)
 ---
+
+
 # Piscine datascience 2 - Data Viz
 ## Ex00
+This script creates a pie chart of the actions costumers take on the site.
+```sql
+    SELECT event_type, COUNT(*) AS total
+    FROM customers
+    GROUP BY event_type
+    ORDER BY total DESC
+```
+# Query: We count the total number of occurencies for each event_type in the customers table.
+
+``` text
+    fig, ax = plt.subplots() 
+    ax.pie(
+        # The values to be plotted, labels, show percentage explode parameter...
+    )
+```
+![alt text](image.png)
+
+## Ex01
+This script creates a line chart showing the number of events per day for each event type.
+```sql
+    SELECT event_time::date AS date, event_type, COUNT(*) AS total
+    FROM customers
+    GROUP BY date, event_type
+    ORDER BY date ASC
+```
+ # Query: groups the events by date and event type, counting the total number of events for each combination. The results are ordered by date in ascending order.
 
 
+```python
+    fig, ax = plt.subplots()
+    for event_type in df['event_type'].unique():
+        subset = df[df['event_type'] == event_type]
+        ax.plot(subset['date'], subset['total'], label=event_type)
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Total Events')
+    ax.set_title('Total Events per Day by Event Type')
+    ax.legend()
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+```
+# Number of costumers
+![alt text](image-1.png)
+# Number of sales
+![alt text](image-2.png)
+# Average spending costumer
+![alt text](image-3.png)
+
+## ex02
+The script prints the mean, median, min, max, first, second and third quartile of the price of
+the items purchased and displays them as box plots with the price of the items purchased.
+```sql
+    SELECT price
+    FROM customers
+    WHERE event_type = 'purchase'
+```
+```python
+    fig, ax = plt.subplots()
+    ax.boxplot(df['price'], vert=False)
+    ax.set_title('Box Plot of Purchase Prices')
+    ax.set_xlabel('Price')
+    plt.tight_layout()
+```
+### Print statistics
+![alt text](image-4.png)
+### Price box plot of the items purchased
+![alt text](image-5.png)
+### Price box plot of the items purchased without outliers
+![alt text](image-6.png)
+###  Box plot with the average basket price per user
+![alt text](image-7.png)
 
 ## Useful Docker Commands
 
