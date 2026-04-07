@@ -109,6 +109,22 @@ To confirm the number of rows in your customers table:
 SELECT COUNT(*) FROM customers; -- Expected: 20,692,840
 ```
 #  Piscine datascience 1 - Data Warehouse
+## Exercice 00: create tables
+Successfully copied 380MB to postgres:/tmp/data_2023_feb.csv:
+    ```docker cp ./data_2023_feb.csv postgres:/tmp/data_2023_feb.csv```
+    ```docker exec -it postgres psql -U your_login -d piscineds -W```
+    ```CREATE TABLE data_2023_feb (
+        event_time TIMESTAMP,
+        event_type VARCHAR,
+        product_id INT,
+        price FLOAT,
+        user_id INT,
+        user_session UUID
+    );
+
+    \copy data_2023_feb(event_time, event_type, product_id, price, user_id, user_session)
+    FROM '/tmp/data_2023_feb.csv' DELIMITER ',' CSV HEADER;
+```
 ## Exercice 01: customers table
 The script connects to a PostgreSQL database, scans the schema for any tables starting with the prefix data_20 (representing different months like data_2022_oct, data_2023_jan, etc.), and uses a SQL command to merge them all into one master table named customers.
 ```sql
@@ -117,8 +133,13 @@ union_query = f"""
     {" UNION ALL ".join([f'SELECT * FROM "{table}"' for table in table_list])};
 """
 ```
+### Merging tables into costumers table
+    INSERT INTO customers
+    SELECT * FROM data_2023_feb;
+
 **Count: 16536158**
 ---
+
 ## Exercice 02: remove duplicates
 This script performs data cleaning operation. It uses a temporary table and identifies and removes duplicate entries in the customers table based on specific event criteria, then replaces the original table with the cleaned version.
 ```sql
@@ -278,3 +299,4 @@ docker compose down -v
 * [Python OS Library Snippets](https://www.pythonforbeginners.com/code-snippets-source-code/python-os-listdir-and-endswith)
 * [Importing Data to Pandas DataFrames](https://medium.com/@alestamm/importing-data-from-a-postgresql-database-to-a-pandas-dataframe-5f4bffcd8bb2)
 * [Pandas: Drop Duplicates Documentation](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.drop_duplicates.html)
+* https://github.com/VulpesDev/DataPiscineNotebook/blob/main/src/DataAnalyst.ipynb
