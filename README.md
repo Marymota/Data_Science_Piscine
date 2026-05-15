@@ -201,6 +201,16 @@ based on product_id.
 
 
 # Piscine datascience 2 - Data Viz
+
+On this module we will be visualizing and analyzing the costumers data. 
+This is the normal process by which we do "Customer Segmentation" using RFM (Recency, Frequency, Monetary) analysis and K-Means clustering.
+
+On Ex00 we can visualize the distribution of the different event types (page_view, add_to_cart, purchase, remove_from_cart) using a pie chart. This gives us an overview of how customers interact with the site.
+On Ex01 we analyze how the number of costumers, sales and average spending per costumer evolve over time using line charts. This helps us identify customer behavior changes and trends over time.
+On Ex02 we analyze the price distribution of the items purchased using box plots. This allows us to understand the range of prices customers are paying, identify outliers and get insights into the average spending habits of customers.
+On Ex03 we perform RFM analysis to segment customers based on their recency, frequency and monetary value. We then visualize the average RFM values for each segment using bar charts, which helps us understand the characteristics of each customer segment and tailor marketing strategies accordingly.
+On Ex04 we apply K-Means clustering to further segment customers based on their RFM values. We visualize the clusters using scatter plots, which allows us to see how customers are grouped based on their purchasing behavior and identify distinct customer segments for targeted marketing efforts.
+
 ## Ex00
 This script creates a pie chart of the actions costumers take on the site.
 ```sql
@@ -218,6 +228,12 @@ This script creates a pie chart of the actions costumers take on the site.
     )
 ```
 ![alt text](image.png)
+
+***Output:***
+Pie chart - Percentage of ocurrence of each activity
+The pie chart shows that the majority of events are page views, followed by add to cart, remove from cart and purchases. This indicates that while many customers are browsing products (50.3%), only a bit more than half (28.6%) is added to the cart and then half of it is removed from the cart after with only a small percentage (6.7%) being actually purchased.
+***Insight:***
+The quantity of items removed from the cart after being added can be a red flag that indicates problems with the checkout or shipping conditions.
 
 ## Ex01
 This script creates a line chart showing the number of events per day for each event type.
@@ -249,6 +265,22 @@ This script creates a line chart showing the number of events per day for each e
 # Average spending costumer
 ![alt text](image-3.png)
 
+***Output:***
+
+1. Line graph - How activity changes daily/monthly/yearly
+Shows the number of customers on the site from October to February. The fluctuations show that the higher picks are at the second half of Novembre while the lower picks are at the end of December and early January.
+
+2. Bar graph - column chart - comparing categories
+Shows the total value of sales during each month. It shows that November had the most sales valued at 1.2 millions while december had the lowest sales, less than 0.9 millions.
+
+3. Area chart - focuses on trend and magnitude/volumes
+How much customers spend during the different months. It shows that the average spending from customers has some picks during november and lowers below the normal range at the end of December.
+
+***Insight:***
+Sales remained relatively stable at around 1 million during October, January, and February. However, they have increased in November, which may be linked to promotional campaigns, seasonal discounts, or events such as Black Friday that encouraged customers to spend more.
+In contrast, December experienced a decline in sales. This could be influenced by holiday-related factors, where customers may have reduced online activity, shifted spending toward other retailers, or prioritized holiday travel and expenses.
+Overall, the data suggests that seasonal promotions and holiday periods have a noticeable impact on customer purchasing behavior and average spending patterns.
+
 ## ex02
 The script prints the mean, median, min, max, first, second and third quartile of the price of
 the items purchased and displays them as box plots with the price of the items purchased.
@@ -272,6 +304,57 @@ the items purchased and displays them as box plots with the price of the items p
 ![alt text](image-6.png)
 ###  Box plot with the average basket price per user
 ![alt text](image-7.png)
+
+***Output***: 
+1. 
+- Box-and-Whisker Plot - Show the distribution and outliers of values
+- Interquartile Range (IQR): This is where the middle 50% of the prices sit. Since the box is very thin and located near 0, it tells us that the vast majority of the items are priced very low.
+- The Median: The line inside the box represents the median price.
+- The "Whiskers": The lines extending from the box show the range of the bulk of the data
+- The Diamonds (Outliers): The green diamond shapes scattered across the chart are outliers. These represent data points that are significantly higher or lower than the rest.
+2. Box plot without outliers
+- The Median line indicates that half the products are positioned below ~3 in the price range and half of them are above it.
+- IQR: The green box shows that 50% of all items are in the range between 2₳ and 5₳.
+3. Box Plot - Represents average basket price per user
+- The Median: Half the users have a basket average of less or higher than ~28₳.
+- IQR: 50% of the baskets are between ~15₳ and ~45₳. 75% of baskets are less than 45₳ with some outliers above 100₳.
+
+***Insight***:
+- Heavy Positive Skew:Massive cluster of data near 0, but a long trail of outliers stretching all the way to 300+. This suggests that the website sells mostly inexpensive items, with a few "premium" expensive ones.
+- Anomalies or Errors: On the left side there are outliers below 0 (around -75 and -50) and there should not be negative prices. This may indicate data errors such as refunds or system glitches.
+- Data Density: The thick "smudge" of green diamonds until 200 indicates that while these are outliers compared to the cheapest products, there is still a very large group of mid-priced items.
+The three plots show that although most items bought are inexpensive, customers buy in bulk instead of 1-2 products at a time.
+
+## Ex03 
+This script creates bar charts showing the frequency of orders by customers and how much they spend.
+This are part of a RFM Analysis (Recency, Frequency, Monetary)
+
+***Output***: 
+1. Histogram showing that most customers (70000+) shopped from 0 to 10 times, and that less than 20000 shop more than 20 times.
+2. Histogram showing that most customers (75000) spent less than 50₳ and that only around 7000 customers spent more than 100₳.
+
+***Insight***:
+With this exercises we can create the Business Profile of the company being analysed.
+1. Product: Very affordable items (Median: 3₳)
+2. Shopping: Customers buy in bulk (Median Basket: 28₳)
+3. Retention: Most customers buy a large bulk of cheap items (spending under 50₳ total), and don't return frequently.
+
+## Ex04
+This script creates an Elbow Method to be able to know the optimal number of clusters to group customer types
+Elbow Method: Tool used to find the best number of clusters. It runs multiple times incrementing the number of clusters.
+K-Means algorithm: Used to find the optimal number of clusters
+Inertia: Inertia measures the distance between the center of a cluster and the points inside it. High inertia means that clusters are a mess because the spending habits (SUM(price)) vary too much within the group. When the inertia drops, it means there are a group of people who spend similar amounts of money.
+
+***Output***: 
+A Line Chart representing the Elbow Method. It shows the relationship between the number of clusters and the Inertia (the measure of how well the data points are grouped).
+
+***Insight***:
+The chart demonstrates that 3 clusters is the "optimal" number of clusterings. This is where the "elbow" of the curve is. Between 1 and 3 clusters, we see a massive drop in Inertia (from ~225,000 to ~75,000), meaning the groups are becoming much more distinct. Beyond that the curve flattens out. This confirms that adding more segments is unecessary.
+
+
+
+
+
 
 ## Useful Docker Commands
 

@@ -85,7 +85,14 @@ def mustaches(engine):
         plt.show()  
         plt.clf()
         plt.close('all')
-        
+
+        query_customers = """
+            SELECT price, user_id, session
+            FROM customers
+            WHERE event_type = 'purchase'
+            AND price > 0
+        """
+        df = pd.read_sql(query_customers, engine)     
 
 # --- PLOT 3: Then a box plot with the average basket price per user ---
         total_price_per_user = df.groupby('user_id')['price'].sum().reset_index(name='total_price')
@@ -103,7 +110,7 @@ def mustaches(engine):
             showfliers=True,
             ax=ax
         )
-        ax.set_xlim(-1, 100)
+        ax.set_xlim(0, 100)
         plt.tight_layout()
         plt.show()
 
